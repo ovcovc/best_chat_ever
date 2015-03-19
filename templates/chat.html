@@ -17,6 +17,7 @@
             You are posting as {{ name }}
             {{ form.name.as_hidden }}
         {% else %}
+            {{ form.name.label }}
             {{ form.name }}
             {% for error in form.name.errors %}
                 <div class="alert alert-error">

@@ -1,10 +1,9 @@
 import datetime
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
-
-# Create your views here.
-from chat_room.forms import ChatForm
+from chat_room.forms import ChatForm, LoginForm
 from chat_room.models import Message
-
 
 def chat_room(request):
     name = ''
@@ -32,3 +31,16 @@ def chat_room(request):
             form = ChatForm()
     messages = Message.objects.all().order_by('created_at')
     return render(request, 'chat.html', {'form': form, 'messages':messages, 'name': name})
+
+def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            request.session['name'] = name
+    else:
+        form = LoginForm()
+    if 'name' in request.session:
+        url = reverse('chat')
+        return HttpResponseRedirect(url)
+    return render(request, 'login.html', {'form': form})

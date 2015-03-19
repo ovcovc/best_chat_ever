@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+It appears you haven't used the chat feature yet, tell us your name!
+<form action='{% url 'login' %}' method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+<input type="submit" name="post" value="Proceed" />
+</body>
+</html>

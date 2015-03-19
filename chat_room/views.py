@@ -23,6 +23,7 @@ def chat_room(request):
                 text = form.cleaned_data['text']
                 message = Message(name=name, text=text)
                 message.save()
+                form = ChatForm(initial={'name': name})
     else:
         if 'name' in request.session:
             name = request.session['name']

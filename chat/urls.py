@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     url(r'^api/v1/consultants/create$', 'chat_room.views.create_consultant'),
     url(r'^api/v1/consultants/(?P<id>[0-9]+)/available$', 'chat_room.views.set_consultant_available'),
     url(r'^api/v1/consultants/(?P<id>[0-9]+)/busy$', 'chat_room.views.set_consultant_busy'),
+    url(r'^api/v1/consultants/(?P<id>[0-9]+)/update_google_id', 'chat_room.views.update_google_id'),
 )

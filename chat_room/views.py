@@ -78,6 +78,9 @@ def create_consultant(request):
     data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id')}
     serializer = ConsultantSerializer(data=data)
     if serializer.is_valid():
+        for c in Consultant.objects.filter(google_id = request.DATA.get('google_id')):
+            c.google_id = ""
+            c.save()
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -91,6 +94,23 @@ def set_consultant_available(request, id):
     data = {'is_available': True}
     serializer = ConsultantSerializer(consultant, data=data, partial=True)
     if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def update_google_id(request, id):
+    try:
+        consultant = Consultant.objects.get(pk=id)
+    except Consultant.DoesNotExist:
+        return HttpResponse(status=404)
+    data = {'google_id': request.DATA.get('google_id')}
+    serializer = ConsultantSerializer(consultant, data=data, partial=True)
+    if serializer.is_valid():
+        for c in Consultant.objects.filter(google_id = request.DATA.get('google_id')):
+            if c is not consultant:
+                c.google_id = ""
+                c.save()
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

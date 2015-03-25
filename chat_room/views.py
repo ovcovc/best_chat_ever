@@ -1,9 +1,16 @@
 import datetime
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
+from opentok import OpenTok, MediaModes
+import opentok
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from chat_room.forms import ChatForm, LoginForm
-from chat_room.models import Message
+from chat_room.models import Message, Consultant
+from chat_room.serializers import ConsultantSerializer
+
 
 def chat_room(request):
     name = ''
@@ -45,3 +52,59 @@ def login(request):
         url = reverse('chat')
         return HttpResponseRedirect(url)
     return render(request, 'login.html', {'form': form})
+
+def video_chat(request):
+    key = "45189182"
+    secret = "892545526be847347ac168b75f0be0cbe7902e49"
+    opentok_sdk = OpenTok(key, secret)
+    session = opentok_sdk.create_session(media_mode=MediaModes.routed)
+    print session.session_id
+    token = opentok_sdk.generate_token(session.session_id)
+    print "token " + token
+    return render(request, 'video_chat.html', {'API_KEY': key, 'SESSION_ID': session.session_id, "TOKEN": token})
+
+
+#APIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPI
+
+@api_view(['GET'])
+def all_consultants(request):
+    if request.method == 'GET':
+        consultants = Consultant.objects.all()
+        serializer = ConsultantSerializer(consultants, many=True)
+        return Response(serializer.data)
+
+@api_view(['POST'])
+def create_consultant(request):
+    data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id')}
+    serializer = ConsultantSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST', 'GET'])
+def set_consultant_available(request, id):
+    try:
+        consultant = Consultant.objects.get(pk=id)
+    except Consultant.DoesNotExist:
+        return HttpResponse(status=404)
+    data = {'is_available': True}
+    serializer = ConsultantSerializer(consultant, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST', 'GET'])
+def set_consultant_busy(request, id):
+    try:
+        consultant = Consultant.objects.get(pk=id)
+    except Consultant.DoesNotExist:
+        return HttpResponse(status=404)
+    data = {'is_available': False}
+    serializer = ConsultantSerializer(consultant, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

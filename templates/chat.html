@@ -2,10 +2,10 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Cool chat</title>
 </head>
 <body>
 <h1>This is the best chat ever!</h1>
+<a href="{% url 'video_chat' %}">Press for video chat</a>
 {% for message in messages %}
     <p>{{ message }}</p>
 {% empty %}
@@ -40,3 +40,4 @@
 </form>
 </body>
 </html>
+

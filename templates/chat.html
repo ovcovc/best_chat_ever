@@ -5,7 +5,7 @@
 </head>
 <body>
 <h1>This is the best chat ever!</h1>
-<a href="{% url 'video_chat' %}">Press for video chat</a>
+<a href="{% url 'video_chat' %}" target=_blank>Press for video chat</a>
 {% for message in messages %}
     <p>{{ message }}</p>
 {% empty %}

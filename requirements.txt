@@ -8,3 +8,4 @@ wsgiref==0.1.2
 opentok
 djangorestframework
 python-gcm
+django-extensions

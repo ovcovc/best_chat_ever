@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'chat_room',
     'rest_framework',
+    'django_extensions'
 )
 
 MIDDLEWARE_CLASSES = (

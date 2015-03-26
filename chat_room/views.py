@@ -57,7 +57,7 @@ def login(request):
     return render(request, 'login.html', {'form': form})
 
 def video_chat(request):
-    google_id_2 = "APA91bH4b0z280r9tAHu8_ZkVtHVF6YZwVhf1D7w5mEobr5n3r7blVfamdSHhxhekoK3EFedUZkY3MWGhCAYmhIougLlCI57mGa1uuc1_KrgvBEXeuslx0VAhfW12uVVfL7gdEQjumFCeSvGVKoTr5IHfk8n8OoMgA"
+    google_id_2 = "APA91bFOG6hT3hNIhYP2YHtxLKCATDWKolIIKdkaj8_AHbWDnVxHmEJuPorVTByYWsyiSInYmfD9NnDzX-73LFBQpObffxWzUc-wRbxxD08f-0HjHBSQMihoVYeCC-E8EH-99SLrfbM43qBqbA_8TdFCaUNRR6Qt-Q"
     google_api_key = "AIzaSyDVO2LlKyohK8_HSv1nx1S5J6ajz_1oGUU"
     google_id = "APA91bEJ4HdNXmXLCnJTNxZzgiUCoew_agq-xdOksd0okpnFLPwmMoPUXst2WdspXA9gkd-U6TF1MaNImVHO1w2rVuHBPR_vAddP7e8YUlrW7PLLfdi9OoX99ugiJymp9prYBbuHh2dKSnwZXdMUiBx718itf8C5kg"
     gcm = GCM(google_api_key)
@@ -115,14 +115,16 @@ def log_in(request):
 
 @api_view(['POST'])
 def log_out(request):
-    name = request.DATA.get('name')
-    password = request.DATA.get('password')
+    token = request.data.get('token')
+    if not token:
+        return HttpResponse(status=403)
     try:
-        consultant = Consultant.objects.get(name=name, password=password)
+        consultant = Consultant.objects.get(pk=request.data.get('id'))
     except Consultant.DoesNotExist:
         return HttpResponse(status=404)
-    token = token_generator()
-    data = {'active_token': token}
+    if token is not consultant.active_token:
+        return HttpResponse(status=403)
+    data = {'is_active': False, 'active_token': ""}
     serializer = ConsultantSerializer(consultant, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()

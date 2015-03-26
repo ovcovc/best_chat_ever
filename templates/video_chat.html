@@ -57,8 +57,8 @@
 				publisherDiv.setAttribute('id', 'opentok_publisher');
 				parentDiv.appendChild(publisherDiv);
 				publisher = session.publish(publisherDiv.id, publisherProperties); // Pass the replacement div id to the publish method
-                publisher.publishVideo(false)
-			}
+			    publisher.publishVideo(false)
+            }
 		}
 
 		function stopPublishing() {
@@ -159,7 +159,9 @@
 			var subscriberDiv = document.createElement('div'); // Create a div for the subscriber to replace
 			subscriberDiv.setAttribute('id', stream.streamId); // Give the replacement div the id of the stream as its id.
 			document.getElementById('subscribers').appendChild(subscriberDiv);
-			subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, {width:1280, height:720});
+
+			subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, {width:1280, height:960});
+
 		}
 
 		function show(id) {
@@ -176,13 +178,12 @@
 </head>
 <body>
 	<div id="links">
-
        	<input type="button" value="Disconnect" id ="disconnectLink" onClick="javascript:disconnect()" />
-
 	</div>
 
-	<div id="myCamera" class="publisherContainer"></div>
+
 	<div id="subscribers"></div>
-	<div id="signals"></div>
+    <div id="myCamera" class="publisherContainer"></div>
+
 </body>
 </html>

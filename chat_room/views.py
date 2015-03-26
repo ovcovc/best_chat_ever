@@ -87,7 +87,8 @@ def all_consultants(request):
 
 @api_view(['POST'])
 def create_consultant(request):
-    data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id'), 'active_token': ''}
+    token = token_generator()
+    data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id'), 'active_token': token}
     serializer = ConsultantSerializer(data=data)
     if serializer.is_valid():
         for c in Consultant.objects.filter(google_id = request.DATA.get('google_id')):

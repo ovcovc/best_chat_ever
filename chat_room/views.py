@@ -1,7 +1,10 @@
 import datetime
+import random
+import string
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
+from gcm import GCM
 from opentok import OpenTok, MediaModes
 import opentok
 from rest_framework import status
@@ -54,6 +57,10 @@ def login(request):
     return render(request, 'login.html', {'form': form})
 
 def video_chat(request):
+    google_id_2 = "APA91bH4b0z280r9tAHu8_ZkVtHVF6YZwVhf1D7w5mEobr5n3r7blVfamdSHhxhekoK3EFedUZkY3MWGhCAYmhIougLlCI57mGa1uuc1_KrgvBEXeuslx0VAhfW12uVVfL7gdEQjumFCeSvGVKoTr5IHfk8n8OoMgA"
+    google_api_key = "AIzaSyDVO2LlKyohK8_HSv1nx1S5J6ajz_1oGUU"
+    google_id = "APA91bEJ4HdNXmXLCnJTNxZzgiUCoew_agq-xdOksd0okpnFLPwmMoPUXst2WdspXA9gkd-U6TF1MaNImVHO1w2rVuHBPR_vAddP7e8YUlrW7PLLfdi9OoX99ugiJymp9prYBbuHh2dKSnwZXdMUiBx718itf8C5kg"
+    gcm = GCM(google_api_key)
     key = "45189182"
     secret = "892545526be847347ac168b75f0be0cbe7902e49"
     opentok_sdk = OpenTok(key, secret)
@@ -61,10 +68,15 @@ def video_chat(request):
     print session.session_id
     token = opentok_sdk.generate_token(session.session_id)
     print "token " + token
+    data = {'token': token, 'sesja': session.session_id}
+    response = gcm.json_request(registration_ids=[google_id_2,], data=data)
     return render(request, 'video_chat.html', {'API_KEY': key, 'SESSION_ID': session.session_id, "TOKEN": token})
 
 
 #APIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPIAPI
+
+def token_generator(size=24, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 @api_view(['GET'])
 def all_consultants(request):
@@ -75,7 +87,7 @@ def all_consultants(request):
 
 @api_view(['POST'])
 def create_consultant(request):
-    data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id')}
+    data = {'name': request.DATA.get('name'), 'password': request.DATA.get('password'), 'google_id': request.DATA.get('google_id'), 'active_token': ''}
     serializer = ConsultantSerializer(data=data)
     if serializer.is_valid():
         for c in Consultant.objects.filter(google_id = request.DATA.get('google_id')):
@@ -85,12 +97,49 @@ def create_consultant(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST', 'GET'])
+@api_view(['POST'])
+def log_in(request):
+    name = request.DATA.get('name')
+    password = request.DATA.get('password')
+    try:
+        consultant = Consultant.objects.get(name=name, password=password)
+    except Consultant.DoesNotExist:
+        return HttpResponse(status=404)
+    token = token_generator()
+    data = {'active_token': token}
+    serializer = ConsultantSerializer(consultant, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def log_out(request):
+    name = request.DATA.get('name')
+    password = request.DATA.get('password')
+    try:
+        consultant = Consultant.objects.get(name=name, password=password)
+    except Consultant.DoesNotExist:
+        return HttpResponse(status=404)
+    token = token_generator()
+    data = {'active_token': token}
+    serializer = ConsultantSerializer(consultant, data=data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
 def set_consultant_available(request, id):
+    token = request.data.get('token')
+    if not token:
+        return HttpResponse(status=403)
     try:
         consultant = Consultant.objects.get(pk=id)
     except Consultant.DoesNotExist:
         return HttpResponse(status=404)
+    if token is not consultant.active_token:
+        return HttpResponse(status=403)
     data = {'is_available': True}
     serializer = ConsultantSerializer(consultant, data=data, partial=True)
     if serializer.is_valid():
@@ -104,6 +153,11 @@ def update_google_id(request, id):
         consultant = Consultant.objects.get(pk=id)
     except Consultant.DoesNotExist:
         return HttpResponse(status=404)
+    token = request.data.get('token')
+    if not token:
+        return HttpResponse(status=403)
+    if token is not consultant.active_token:
+        return HttpResponse(status=403)
     data = {'google_id': request.DATA.get('google_id')}
     serializer = ConsultantSerializer(consultant, data=data, partial=True)
     if serializer.is_valid():
@@ -121,6 +175,11 @@ def set_consultant_busy(request, id):
         consultant = Consultant.objects.get(pk=id)
     except Consultant.DoesNotExist:
         return HttpResponse(status=404)
+    token = request.data.get('token')
+    if not token:
+        return HttpResponse(status=403)
+    if token is not consultant.active_token:
+        return HttpResponse(status=403)
     data = {'is_available': False}
     serializer = ConsultantSerializer(consultant, data=data, partial=True)
     if serializer.is_valid():

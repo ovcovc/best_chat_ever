@@ -7,13 +7,14 @@ class ConsultantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Consultant
-        fields = ('id', 'name', 'password', 'google_id', 'is_available')
+        fields = ('id', 'name', 'password', 'google_id', 'is_available', 'active_token')
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.password = validated_data.get('password', instance.password)
         instance.google_id = validated_data.get('google_id', instance.google_id)
         instance.is_available = validated_data.get('is_available', instance.is_available)
+        instance.active_token = validated_data.get('active_token', instance.active_token)
         instance.save()
         return instance
 

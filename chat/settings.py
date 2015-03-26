@@ -87,7 +87,7 @@ STATIC_URL = '/static/'
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,  'templates'),
 )
-# HEROKU STUFF
+HEROKU STUFF
 import dj_database_url
 # Parse database configuration from $DATABASE_URL
 

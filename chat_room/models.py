@@ -15,3 +15,4 @@ class Consultant(models.Model):
     password = models.CharField(verbose_name=u'User pass', max_length=255, blank=False, null=False)
     google_id = models.TextField(verbose_name=u'GoogleID', blank=False, null=False)
     is_available = models.BooleanField(verbose_name=u"Is available?", default=False)
+    active_token = models.CharField(verbose_name=u'Active token', max_length=255, blank=True)

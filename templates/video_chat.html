@@ -53,11 +53,11 @@
 				var parentDiv = document.getElementById('myCamera');
 				var publisherDiv = document.createElement('div'); // Create a div for the publisher to replace
 				var publisherProperties = {};
-				publisherProperties.name = 'A web-based OpenTok client';
+				publisherProperties.name = 'Janurz nadaje';
 				publisherDiv.setAttribute('id', 'opentok_publisher');
 				parentDiv.appendChild(publisherDiv);
 				publisher = session.publish(publisherDiv.id, publisherProperties); // Pass the replacement div id to the publish method
-
+                publisher.publishVideo(false)
 			}
 		}
 
@@ -109,6 +109,7 @@
 		}
 
 		function streamDestroyedHandler(event) {
+            window.close();
 			// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
 			// This default behaviour can be prevented using event.preventDefault()
 		}
@@ -158,7 +159,7 @@
 			var subscriberDiv = document.createElement('div'); // Create a div for the subscriber to replace
 			subscriberDiv.setAttribute('id', stream.streamId); // Give the replacement div the id of the stream as its id.
 			document.getElementById('subscribers').appendChild(subscriberDiv);
-			subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id);
+			subscribers[stream.streamId] = session.subscribe(stream, subscriberDiv.id, {width:1280, height:720});
 		}
 
 		function show(id) {
